@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KAIRA GARMENT | Quotation & Bill</title>
+<style>
+:root{--gold:#d4af37;--ink:#151515;--muted:#666;--line:#ddd}
+*{box-sizing:border-box}body{margin:0;background:#f2f3f5;color:#171717;font:15px Arial,sans-serif}
+header{background:#101010;color:white;padding:20px 5%;border-bottom:4px solid var(--gold)}
+header h1{margin:0;color:var(--gold);letter-spacing:1px}header p{margin:6px 0 0;color:#ddd}
+main{max-width:1100px;margin:24px auto;padding:0 14px;display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.panel{background:white;border-radius:12px;padding:20px;box-shadow:0 4px 18px #0000000c}
+h2{font-size:18px;margin:0 0 16px}label{display:block;font-size:13px;color:#555;margin:10px 0 5px}
+input,select,textarea{width:100%;padding:10px;border:1px solid #ccc;border-radius:7px;font:inherit;background:white}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.items{grid-column:1/-1}
+table{width:100%;border-collapse:collapse;margin-top:10px}th,td{border-bottom:1px solid var(--line);padding:9px 5px;text-align:left}th{font-size:12px;color:#555}td input{padding:7px;min-width:0}
+td button{border:0;background:#ffe8e8;color:#a00;border-radius:5px;padding:7px;cursor:pointer}
+button{border:0;border-radius:8px;padding:11px 14px;font-weight:bold;cursor:pointer}
+.primary{background:var(--gold);color:#111}.dark{background:#171717;color:white}.light{background:#eee;color:#222}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}.totals{margin:16px 0 0 auto;max-width:300px}.totals div{display:flex;justify-content:space-between;padding:6px 0}.grand{font-size:20px;font-weight:bold;border-top:2px solid #222;margin-top:5px;padding-top:10px!important}
+.bill-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.bill-head h2{color:#b18c12;font-size:24px;margin:0}.bill-meta{text-align:right;font-size:13px;color:#555}
+.note{font-size:12px;color:#777;line-height:1.5}.preview table th{background:#f6f6f6}.preview td{padding:11px 7px}.preview .totals{margin-right:0}
+@media(max-width:760px){main{grid-template-columns:1fr}.items{grid-column:auto}.row{grid-template-columns:1fr 1fr}}
+@media print{body{background:white}.no-print,header,.editor{display:none!important}main{display:block;margin:0;padding:0;max-width:none}.panel{box-shadow:none;border:0;padding:0}.preview{display:block!important}.preview table{font-size:12px}.preview .totals{margin-top:25px}}
+</style>
+</head>
+<body>
+<header><h1>KAIRA GARMENT</h1><p>Jersey Quotation & Billing Software</p></header>
+<main>
+<section class="panel editor">
+<h2>New Quotation / Bill</h2>
+<div class="row">
+<div><label>Document Type</label><select id="docType"><option>Quotation</option><option>Invoice / Bill</option></select></div>
+<div><label>Document No.</label><input id="docNo" value="KG-001"></div>
+<div><label>Customer Name</label><input id="customer" placeholder="Customer name"></div>
+<div><label>Phone Number</label><input id="phone" placeholder="07X XXX XXXX"></div>
+<div><label>Date</label><input id="date" type="date"></div>
+<div><label>Delivery Date</label><input id="delivery" type="date"></div>
+</div>
+<label>Address / Team name</label><input id="address" placeholder="Optional">
+<div class="items">
+<h2 style="margin-top:22px">Jersey Items</h2>
+<table><thead><tr><th style="width:29%">Description</th><th>Size</th><th>Qty</th><th>Unit Price (Rs.)</th><th>Total</th><th></th></tr></thead>
+<tbody id="itemRows"></tbody></table>
+<div class="actions"><button class="light" onclick="addItem()">+ Add item</button></div>
+</div>
+<div class="row" style="margin-top:14px">
+<div><label>Discount (Rs.)</label><input id="discount" type="number" min="0" value="0" oninput="render()"></div>
+<div><label>Advance Paid (Rs.)</label><input id="advance" type="number" min="0" value="0" oninput="render()"></div>
+</div>
+<label>Notes / Terms</label><textarea id="notes" rows="3" placeholder="Payment terms, design details, etc."></textarea>
+<div class="actions"><button class="primary" onclick="render()">Update preview</button><button class="dark" onclick="printBill()">Print / Save PDF</button><button class="light" onclick="newDoc()">New document</button></div>
+
+</section>
+<section class="panel preview" id="preview">
+<div class="bill-head"><div><h2>KAIRA GARMENT</h2><div>Wear your own style</div <br> Main Street,Adampan.<br>Mannar<br>070-7847697</h3></div><div class="bill-meta"><strong id="pType">QUOTATION</strong><br>No: <span id="pNo"></span><br>Date: <span id="pDate"></span></div></div>
+<hr style="border:0;border-top:2px solid #d4af37;margin:16px 0">
+<div><strong>Customer:</strong> <span id="pCustomer">—</span><br><strong>Phone:</strong> <span id="pPhone">—</span><br><strong>Address / Team:</strong> <span id="pAddress">—</span><br><strong>Delivery:</strong> <span id="pDelivery">—</span></div>
+<table><thead><tr><th>Description</th><th>Size</th><th>Qty</th><th>Unit Price</th><th>Total (Rs.)</th></tr></thead><tbody id="pItems"></tbody></table>
+<div class="totals"><div><span>Subtotal</span><strong id="pSubtotal">0.00</strong></div><div><span>Discount</span><strong id="pDiscount">0.00</strong></div><div class="grand"><span>Grand Total</span><span id="pGrand">0.00</span></div><div><span>Advance</span><strong id="pAdvance">0.00</strong></div><div><span>Balance Due</span><strong id="pBalance">0.00</strong></div></div>
+<div style="margin-top:25px"><strong>Notes / Terms:</strong><p id="pNotes" style="white-space:pre-wrap">—</p></div>
+
+</section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+function money(n){return (Number(n)||0).toLocaleString('en-LK',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function addItem(desc='',size='M',qty=1,price=0){
+ const tr=document.createElement('tr');
+ tr.innerHTML=`<td><input aria-label="Description" placeholder="Jersey / printing" value="${desc}"></td><td><select aria-label="Size">${['Kids','XS','S','M','L','XL','2XL','3XL','Custom'].map(s=>`<option ${s===size?'selected':''}>${s}</option>`).join('')}</select></td><td><input aria-label="Quantity" type="number" min="1" value="${qty}"></td><td><input aria-label="Unit price" type="number" min="0" step="0.01" value="${price}"></td><td class="lineTotal">0.00</td><td><button aria-label="Remove item" onclick="this.closest('tr').remove();render()">×</button></td>`;
+ tr.querySelectorAll('input,select').forEach(el=>el.addEventListener('input',render));$('itemRows').appendChild(tr);render();
+}
+function render(){
+ const rows=[...$('itemRows').rows];let subtotal=0;$('pItems').innerHTML='';
+ rows.forEach(r=>{const cells=r.querySelectorAll('input,select');const desc=cells[0].value||'Jersey';const size=cells[1].value;const qty=Math.max(0,Number(cells[2].value)||0);const price=Math.max(0,Number(cells[3].value)||0);const total=qty*price;subtotal+=total;r.querySelector('.lineTotal').textContent=money(total);
+ const tr=document.createElement('tr');[desc,size,qty,money(price),money(total)].forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.appendChild(td)});$('pItems').appendChild(tr)});
+ const discount=Math.max(0,Number($('discount').value)||0),advance=Math.max(0,Number($('advance').value)||0),grand=Math.max(0,subtotal-discount);
+ $('pType').textContent=$('docType').value.toUpperCase();$('pNo').textContent=$('docNo').value||'—';$('pDate').textContent=$('date').value||'—';
+ $('pCustomer').textContent=$('customer').value||'—';$('pPhone').textContent=$('phone').value||'—';$('pAddress').textContent=$('address').value||'—';$('pDelivery').textContent=$('delivery').value||'—';
+ $('pSubtotal').textContent=money(subtotal);$('pDiscount').textContent=money(discount);$('pGrand').textContent=money(grand);$('pAdvance').textContent=money(advance);$('pBalance').textContent=money(Math.max(0,grand-advance));$('pNotes').textContent=$('notes').value||'—';
+}
+function printBill(){render();window.print()}
+function newDoc(){if(!confirm('Clear this document and start a new one?'))return;['customer','phone','address','delivery','notes'].forEach(id=>$(id).value='');$('discount').value=0;$('advance').value=0;$('docNo').value='KG-'+String(Date.now()).slice(-5);$('itemRows').innerHTML='';addItem();render()}
+$('date').value=new Date().toISOString().slice(0,10);
+['docType','docNo','customer','phone','date','delivery','address','notes'].forEach(id=>$(id).addEventListener('input',render));
+addItem('Football Jersey','M',1,0);
+</script>
+</body></html>
